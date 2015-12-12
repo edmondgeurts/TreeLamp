@@ -18,6 +18,8 @@ volatile  unsigned long last_interrupt_time = 0;
 #define MAX_PORTS  (HC595_COUNT * 8) //Note not all the ports are used (6 ports per IC)
 #define MAX_BRIGHTNESS 4 //4-bit brightness mask
 #define DEBOUNCING_TIME 1200 //debouncing time in milliseconds
+//#define DEBUG
+
 
 //Row pins
 #define  ROW_A  5
@@ -41,7 +43,7 @@ char lookup[] = {1,2,4,8,16,32,64,128};
 //set all leds to 0
 void clear_leds(struct Led_type *l) {
   for (int i=0; i <= MAX_PORTS; i++) {
-    for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+    for (int j=0; j < MAX_BRIGHTNESS; j++) {
       l[i].led[j] = 0;
     }
    l[i].brightness = 0;
@@ -52,7 +54,7 @@ void clear_leds(struct Led_type *l) {
 void clear_led(struct Led_type *l,char led) {
   switch(led) {
     case 0:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[0].led[j] = 0;
             l[1].led[j] = 0;
             l[2].led[j] = 0;
@@ -63,7 +65,7 @@ void clear_led(struct Led_type *l,char led) {
             l[2].brightness = 0;
           break;
     case 1:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[0].led[j] = 0;
             l[1].led[j] = 0;
             l[2].led[j] = 0;
@@ -74,7 +76,7 @@ void clear_led(struct Led_type *l,char led) {
             l[2].brightness = 0;
           break;
     case 2:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[0].led[j] = 0;
             l[1].led[j] = 0;
             l[2].led[j] = 0;
@@ -85,7 +87,7 @@ void clear_led(struct Led_type *l,char led) {
             l[2].brightness = 0;
           break;
     case 3:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[8].led[j] = 0;
             l[9].led[j] = 0;
             l[10].led[j] = 0;
@@ -96,7 +98,7 @@ void clear_led(struct Led_type *l,char led) {
             l[10].brightness = 0;
           break;
     case 4:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[8].led[j] = 0;
             l[9].led[j] = 0;
             l[10].led[j] = 0;
@@ -107,7 +109,7 @@ void clear_led(struct Led_type *l,char led) {
            l[10].brightness = 0;
           break;
     case 5:
-          for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+          for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[8].led[j] = 0;
             l[9].led[j] = 0;
             l[10].led[j] = 0;
@@ -117,7 +119,7 @@ void clear_led(struct Led_type *l,char led) {
            l[10].brightness = 0;
           break;
     case 6:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[11].led[j] = 0;
             l[12].led[j] = 0;
             l[13].led[j] = 0;
@@ -127,7 +129,7 @@ void clear_led(struct Led_type *l,char led) {
            l[13].brightness = 0;
           break;
     case 7:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[11].led[j] = 0;
             l[12].led[j] = 0;
             l[13].led[j] = 0;
@@ -137,7 +139,7 @@ void clear_led(struct Led_type *l,char led) {
            l[13].brightness = 0;
           break;
     case 8:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[11].led[j] = 0;
             l[12].led[j] = 0;
             l[13].led[j] = 0;
@@ -147,7 +149,7 @@ void clear_led(struct Led_type *l,char led) {
            l[13].brightness = 0;
           break;
     case 9:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[3].led[j] = 0;
             l[4].led[j] = 0;
             l[5].led[j] = 0;
@@ -157,7 +159,7 @@ void clear_led(struct Led_type *l,char led) {
            l[5].brightness = 0;
           break;
     case 10:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[3].led[j] = 0;
             l[4].led[j] = 0;
             l[5].led[j] = 0;
@@ -168,7 +170,7 @@ void clear_led(struct Led_type *l,char led) {
           break;
 
     case 11:
-        for (int j=0; j <= MAX_BRIGHTNESS; j++) {
+        for (int j=0; j < MAX_BRIGHTNESS; j++) {
             l[3].led[j] = 0;
             l[4].led[j] = 0;
             l[5].led[j] = 0;
@@ -266,18 +268,28 @@ void set_leave_color(struct Led_type *l, char leave, char r, char g, char b) {
 
 //set the brightness of a led
 void set_led(struct Led_type *l, int led_number, char brightness) {
-  brightness = constrain(brightness, 0, 15);
-  led_number = constrain(led_number, 0, MAX_PORTS);
+ // brightness = constrain(brightness, 0, 15);
+ // led_number = constrain(led_number, 0, MAX_PORTS);
   //convert decimal number into binary
-  for (char i = MAX_BRIGHTNESS; i >= 0; i--) {
+//  Serial.print("brightness\n");
+  for (char i = (MAX_BRIGHTNESS - 1); i >= 0; i--) {
     if (brightness - (1 << i) >= 0) {
       brightness -= (1 << i);
       l[led_number].led[i] = 1;
+      #ifdef DEBUG
+      Serial.print(int(i));Serial.print(" -> ");  Serial.print( l[led_number].led[i]); Serial.print(" | ");
+      #endif DEBUG
     }
     else {
      l[led_number].led[i] = 0; 
+     #ifdef DEBUG
+     Serial.print(int(i));Serial.print(" -> "); Serial.print( l[led_number].led[i]); Serial.print(" | ");
+     #endif DEBUG
     }//end if
   }//end for
+  #ifdef DEBUG
+  Serial.println("\n");
+  #endif DEBUG
 }
 
 //use 4-bit BAM
@@ -300,25 +312,34 @@ void shiftreg(struct Led_type *l) {
       tmp = 0;
       maskindex = l[ledno].brightness;
       
+      //One tick
       if (bam == 1 && l[ledno].led[maskindex]) {
+        Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); 
+        Serial.println();
         if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
           else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp;  }
             else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
        
-      }
+      } //Two ticks
         else if ((bam == 2 || bam == 3) && l[ledno].led[maskindex]) {
+          Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); 
+          Serial.println();
           if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
             else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
               else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
           
-        }
+        } //Four ticks
           else if (bam >= 4 && bam <= 7 && l[ledno].led[maskindex]) {
+            Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); 
+            Serial.println();
             if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
               else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
                 else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
             
-          }
+          } //Eight ticks
             else if (bam >= 8 && bam <= 15 && l[ledno].led[maskindex]) {
+              Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); 
+              Serial.println();
               if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
                 else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
                   else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
@@ -350,8 +371,6 @@ void shiftreg(struct Led_type *l) {
     }//end switch
   }//end FOR BAM
 }//end fuction shiftreg
-
-
 
 void reset_bus() {
  for (int i=HC595_COUNT; i >= 0; i--) {
@@ -407,6 +426,102 @@ void anim_cycle() {
   
 }//end anim cycle
 
+
+void shiftregV2(struct Led_type *l) {
+  unsigned char tmp;
+  unsigned char maskindex;
+   
+  for (unsigned char bam = 0; bam < 16; bam++) {
+    //digitalWrite(latchpin, LOW);
+    //set the latch pin LOW
+    PORTB &= B11111110; //port 8 LOW
+    //tmp = 0;
+    //reset the switch position
+    for (char i=0; i < HC595_COUNT; i++) {
+      hc595[i] = 0;
+    }
+    
+    for (char ledno = MAX_PORTS - 1; ledno >= 0; ledno--) {
+      tmp = 0;
+      maskindex = l[ledno].brightness;
+      
+      //One tick
+      if (bam == 1 && l[ledno].led[maskindex]) {
+        #ifdef DEBUG
+        Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); Serial.print("Mask index: "); Serial.print(l[ledno].led[maskindex]);
+        Serial.println();
+        #endif
+        if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
+          else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp;  }
+            else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
+       
+      } //Two ticks
+        else if ((bam == 2 || bam == 3) && l[ledno].led[maskindex]) {
+           #ifdef DEBUG
+          Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); Serial.print("Mask index: "); Serial.print(l[ledno].led[maskindex]);
+          Serial.println();
+          #endif
+          if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
+            else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
+              else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
+          
+        } //Four ticks
+          else if (bam >= 4 && bam <= 7 && l[ledno].led[maskindex]) {
+             #ifdef DEBUG
+            Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); Serial.print("Mask index: "); Serial.print(l[ledno].led[maskindex]);
+            Serial.println();
+            #endif
+            if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
+              else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
+                else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
+            
+          } //Eight ticks
+            else if (bam >= 8 && bam <= 15 && l[ledno].led[maskindex]) {
+               #ifdef DEBUG
+              Serial.print(int(bam)); Serial.print(" -> "); Serial.print(l[ledno].led[maskindex]); Serial.print("Mask index: "); Serial.print(l[ledno].led[maskindex]);
+              Serial.println();
+              #endif
+              if (ledno >= 0 && ledno <= 7) { tmp |= lookup[ledno]; hc595[0] |= tmp; }
+                else if (ledno >= 8 && ledno <= 15) {tmp |= lookup[ledno-8]; hc595[1] |= tmp; }
+                  else if (ledno >= 16 && ledno <= 23) {tmp |= lookup[ledno-16]; hc595[2] |= tmp;  }
+      }
+
+      switch (bam) {
+        case 1: l[ledno].brightness = 0; break;
+        case 2: l[ledno].brightness = 1; break;
+        case 4: l[ledno].brightness = 2; break;
+        case 8: l[ledno].brightness = 3; break;
+      }
+
+      if (l[ledno].brightness > 3) {
+        l[ledno].brightness = 0;
+      }//end if max brichtness
+
+    }//end FOR LED
+    
+    //output the result. Turn the leds on or off
+    for (char i=HC595_COUNT - 1; i >= 0; i--) {
+      SPI.transfer(hc595[i]);
+    }
+    //set the latch pin HIGH
+    PORTB |= B00000001; //port 8 HIGH
+    //clear rows
+    PORTD &= B11000111; //port 3, 4 & 5 LOW
+  
+    //set the row
+    switch (current_row) {
+      case 5: PORTD |= B00100000;
+          break;
+      case 3: PORTD |= B00001000;
+          break;
+      case 4: PORTD |= B00010000;
+          break;
+         
+    }//end switch
+  }//end FOR BAM
+}//end fuction shiftregV2
+
+
 //animations
 void anim1a() {
   char max_leave = 12;
@@ -417,20 +532,16 @@ void anim1a() {
   int leave_counter = 0;
 
   clear_leds(leds);
-  shiftreg(leds);
+  shiftregV2(leds);
    
   while ( leave_counter <= max_leave ) {
     //clear_leds(leds);
     anim_transition_offset = millis();
     while ((long) (millis() - anim_transition_offset) <= anim_transition) {
       for (int i=0; i < leave_counter; i++) {
-        //clear_leds(leds);
-        
-        
         set_leave_color(leds,i,15,15,15);
-        shiftreg(leds);
+        shiftregV2(leds);
         clear_led(leds,i);
-        //delay(1500);
       }
       
     }//end while anim transition offset
@@ -439,12 +550,69 @@ void anim1a() {
   
 }//end anim1a
 
+void anim2() {
+  char max_leave = 15;
+  //unsigned long play_time = 26000;
+  unsigned long anim_transition = 60;
+  unsigned long time_offset = millis();
+  unsigned long anim_transition_offset = 0;
+  int leave_counter = 0;
 
+ // clear_leds(leds);
+  //shiftregV2(leds);
+   
+  while ( leave_counter <= max_leave ) {
+    //clear_leds(leds);
+    anim_transition_offset = millis();
+    while ((long) (millis() - anim_transition_offset) <= anim_transition) {
+        clear_led(leds,0);
+        set_leave_color(leds,0,leave_counter,leave_counter,leave_counter);
+        shiftregV2(leds);
+        //clear_led(leds,0);
+      
+      
+    }//end while anim transition offset
+    leave_counter++;
+  }//end while
 
+// delay(2000);
+}//end anim1a
+
+void anim2a() {
+  char max_leave = 0;
+  //unsigned long play_time = 26000;
+  unsigned long anim_transition = 60;
+  unsigned long time_offset = millis();
+  unsigned long anim_transition_offset = 0;
+  int leave_counter = 15;
+
+ // clear_leds(leds);
+  //shiftregV2(leds);
+   
+  while ( leave_counter >= max_leave ) {
+    //clear_leds(leds);
+    anim_transition_offset = millis();
+    while ((long) (millis() - anim_transition_offset) <= anim_transition) {
+        clear_led(leds,0);
+        set_leave_color(leds,0,leave_counter,leave_counter,leave_counter);
+        shiftregV2(leds);
+        //clear_led(leds,0);
+      
+      
+    }//end while anim transition offset
+    leave_counter--;
+  }//end while
+
+// delay(2000);
+}//end anim1a
 
 
 void loop() {
-  anim1a();  
- 
+  anim2(); 
+  delay(500);
+  anim2a();   
+  //set_led(leds, 0, 1 );
+  
+  
   
 }
